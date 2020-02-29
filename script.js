@@ -6,11 +6,6 @@ function findRandomTileChoices(x, y, level, levelWidth, levelHeight) {
   let yToBottom = y + 1;
   let yToTop = y - 1;
 
-  console.log({
-    y,
-    xToRight,
-    levelWidth
-  });
   let tileRight =
     xToRight >= levelWidth ? undefined : tiles[level[y][xToRight]];
   let tileLeft = xToLeft < 0 ? undefined : tiles[level[y][xToLeft]];
@@ -47,182 +42,166 @@ function findRandomTileChoices(x, y, level, levelWidth, levelHeight) {
   return choices;
 }
 
-const levelWidth = 24;
-const levelHeight = 24;
+function generateLevel(levelLength) {
+  const levelWidth = 24;
+  const levelHeight = 24;
+  const startX = Math.floor(levelWidth / 2);
+  const startY = Math.floor(levelHeight / 2);
 
-const level = new Array(levelHeight);
-const visited = new Array(levelHeight);
-for (let i = 0; i < level.length; i++) {
-  level[i] = new Array(levelWidth);
-  visited[i] = new Array(levelWidth);
-}
+  let level, visited, addedTiles, nextTile, firstTime;
 
-let startX = Math.floor(levelWidth / 2);
-let startY = Math.floor(levelHeight / 2);
-let addedTiles = 1;
-
-let nextTile = [[startY, startX, "none"]];
-visited[startY][startX] = true;
-let firstTime = true;
-
-const tileset = document.getElementById("tileset");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-let camX = 0;
-
-ctx.imageSmoothingEnabled = false;
-ctx.scale(2, 2);
-ctx.translate(0, 0);
-
-let simulateSlow = true;
-
-while (!simulateSlow && nextTile.length) {
-  generate();
-}
-
-function generate() {
-  let [y, x] = nextTile.pop();
-
-  let xToRight = x + 1;
-  let xToLeft = x - 1;
-  let yToBottom = y + 1;
-  let yToTop = y - 1;
-
-  // Generate new tile based on the options
-  const tileChoices = findRandomTileChoices(
-    x,
-    y,
-    level,
-    levelWidth,
-    levelHeight
-  );
-
-  let randomTile = tileChoices[Math.floor(Math.random() * tileChoices.length)];
-
-  if (!randomTile) {
-    if (firstTime) {
-      randomTile = Math.floor(Math.random() * tiles.length);
-    } else {
-      console.warn(
-        "I'm stuck, they call me gaseous clay. Leaving tile blank :("
-      );
-      return;
+  initialize();
+  while (addedTiles < levelLength) {
+    initialize();
+    while (nextTile.length && addedTiles < levelLength) {
+      generate();
     }
   }
 
-  level[y][x] = randomTile;
+  return level;
 
-  let scheduledNextTiles = [];
-
-  const topEntropy =
-    yToTop >= 0
-      ? findRandomTileChoices(x, yToTop, level, levelWidth, levelHeight).length
-      : 0;
-  const rightEntropy =
-    xToRight < levelWidth
-      ? findRandomTileChoices(xToRight, y, level, levelWidth, levelHeight)
-          .length
-      : 0;
-  const bottomEntropy =
-    yToBottom < levelHeight
-      ? findRandomTileChoices(x, yToBottom, level, levelWidth, levelHeight)
-          .length
-      : 0;
-  const leftEntropy =
-    xToLeft >= 0
-      ? findRandomTileChoices(xToLeft, y, level, levelWidth, levelHeight).length
-      : 0;
-
-  console.log({
-    topEntropy,
-    leftEntropy,
-    rightEntropy,
-    bottomEntropy
-  });
-  const checks = shuffle([
-    () => {
-      if (topEntropy && yToTop >= 0 && !visited[yToTop][x]) {
-        scheduledNextTiles.push([yToTop, x, topEntropy]);
-        visited[yToTop][x] = true;
-
-        addedTiles += 1;
-        return true;
-      }
-
-      return false;
-    },
-    () => {
-      if (rightEntropy && xToRight < levelWidth && !visited[y][xToRight]) {
-        scheduledNextTiles.push([y, xToRight, rightEntropy]);
-        visited[y][xToRight] = true;
-
-        addedTiles += 1;
-        return true;
-      }
-
-      return false;
-    },
-    () => {
-      if (bottomEntropy && yToBottom < levelHeight && !visited[yToBottom][x]) {
-        scheduledNextTiles.push([yToBottom, x, bottomEntropy]);
-        visited[yToBottom][x] = true;
-
-        addedTiles += 1;
-        return true;
-      }
-
-      return false;
-    },
-    () => {
-      if (leftEntropy && xToLeft >= 0 && !visited[y][xToLeft]) {
-        scheduledNextTiles.push([y, xToLeft, leftEntropy]);
-        visited[y][xToLeft] = true;
-
-        addedTiles += 1;
-        return true;
-      }
-
-      return false;
+  function initialize() {
+    level = new Array(levelHeight);
+    visited = new Array(levelHeight);
+    for (let i = 0; i < level.length; i++) {
+      level[i] = new Array(levelWidth);
+      visited[i] = new Array(levelWidth);
     }
-  ]);
 
-  let lastResult = false;
-  let callIdx = 0;
-  while (!lastResult && callIdx < checks.length) {
-    lastResult = checks[callIdx]();
-    callIdx++;
+    nextTile = [[startY, startX, "none"]];
+    visited[startY][startX] = true;
+
+    addedTiles = 0;
+    firstTime = true;
   }
 
-  scheduledNextTiles.sort((a, b) => {
-    // Sort by lowest entropy first
-    return b[2]() - a[2]();
-  });
+  function generate() {
+    let [y, x] = nextTile.pop();
 
-  scheduledNextTiles.forEach(tile => {
-    tile.pop(); // Remove entropy value
-    nextTile.push(tile);
-  });
+    let xToRight = x + 1;
+    let xToLeft = x - 1;
+    let yToBottom = y + 1;
+    let yToTop = y - 1;
 
-  firstTime = false;
+    // Generate new tile based on the options
+    const tileChoices = findRandomTileChoices(
+      x,
+      y,
+      level,
+      levelWidth,
+      levelHeight
+    );
+
+    let randomTile =
+      tileChoices[Math.floor(Math.random() * tileChoices.length)];
+
+    if (!randomTile) {
+      if (firstTime) {
+        randomTile = Math.floor(Math.random() * tiles.length);
+      } else {
+        console.warn(
+          "I'm stuck, they call me gaseous clay. Leaving tile blank :("
+        );
+        return;
+      }
+    }
+
+    if (randomTile) {
+      addedTiles += 1;
+    }
+
+    level[y][x] = randomTile;
+
+    let scheduledNextTiles = [];
+
+    const topEntropy =
+      yToTop >= 0
+        ? findRandomTileChoices(x, yToTop, level, levelWidth, levelHeight)
+            .length
+        : 0;
+    const rightEntropy =
+      xToRight < levelWidth
+        ? findRandomTileChoices(xToRight, y, level, levelWidth, levelHeight)
+            .length
+        : 0;
+    const bottomEntropy =
+      yToBottom < levelHeight
+        ? findRandomTileChoices(x, yToBottom, level, levelWidth, levelHeight)
+            .length
+        : 0;
+    const leftEntropy =
+      xToLeft >= 0
+        ? findRandomTileChoices(xToLeft, y, level, levelWidth, levelHeight)
+            .length
+        : 0;
+
+    const checks = shuffle([
+      () => {
+        if (topEntropy && yToTop >= 0 && !visited[yToTop][x]) {
+          scheduledNextTiles.push([yToTop, x, topEntropy]);
+          visited[yToTop][x] = true;
+
+          return true;
+        }
+
+        return false;
+      },
+      () => {
+        if (rightEntropy && xToRight < levelWidth && !visited[y][xToRight]) {
+          scheduledNextTiles.push([y, xToRight, rightEntropy]);
+          visited[y][xToRight] = true;
+
+          return true;
+        }
+
+        return false;
+      },
+      () => {
+        if (
+          bottomEntropy &&
+          yToBottom < levelHeight &&
+          !visited[yToBottom][x]
+        ) {
+          scheduledNextTiles.push([yToBottom, x, bottomEntropy]);
+          visited[yToBottom][x] = true;
+
+          return true;
+        }
+
+        return false;
+      },
+      () => {
+        if (leftEntropy && xToLeft >= 0 && !visited[y][xToLeft]) {
+          scheduledNextTiles.push([y, xToLeft, leftEntropy]);
+          visited[y][xToLeft] = true;
+
+          return true;
+        }
+
+        return false;
+      }
+    ]);
+
+    let lastResult = false;
+    let callIdx = 0;
+    while (!lastResult && callIdx < checks.length) {
+      lastResult = checks[callIdx]();
+      callIdx++;
+    }
+
+    scheduledNextTiles.sort((a, b) => {
+      // Sort by lowest entropy first
+      return b[2]() - a[2]();
+    });
+
+    scheduledNextTiles.forEach(tile => {
+      tile.pop(); // Remove entropy value
+      nextTile.push(tile);
+    });
+
+    firstTime = false;
+  }
 }
-
-const interval = setInterval(() => {
-  if (!nextTile.length) {
-    //clearInterval(interval);
-    //console.log(level);
-
-    redrawCanvas();
-
-    return;
-  }
-
-  if (simulateSlow) {
-    generate();
-  }
-
-  redrawCanvas();
-}, 10);
 
 function shuffle(a) {
   var j, x, i;
@@ -235,7 +214,14 @@ function shuffle(a) {
   return a;
 }
 
-function redrawCanvas() {
+function redrawCanvas(level) {
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(2, 2);
+  ctx.translate(0, 0);
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let y = 0; y < level.length; y++) {
@@ -254,3 +240,6 @@ function redrawCanvas() {
     }
   }
 }
+
+const level = generateLevel(84);
+redrawCanvas(level);
