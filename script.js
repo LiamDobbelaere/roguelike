@@ -43,22 +43,25 @@ function findRandomTileChoices(x, y, level, levelWidth, levelHeight) {
 }
 
 function generateLevel(levelLength) {
-  const levelWidth = 24;
-  const levelHeight = 24;
+  const levelWidth = 12;
+  const levelHeight = 12;
   const startX = Math.floor(levelWidth / 2);
   const startY = Math.floor(levelHeight / 2);
 
-  let level, visited, addedTiles, nextTile, firstTime;
+  let level, visited, addedTiles, nextTile, firstTime, stuck, order;
 
   initialize();
-  while (addedTiles < levelLength) {
+  while (addedTiles < levelLength || stuck) {
     initialize();
     while (nextTile.length && addedTiles < levelLength) {
       generate();
     }
   }
 
-  return level;
+  return {
+    level,
+    order
+  };
 
   function initialize() {
     level = new Array(levelHeight);
@@ -73,6 +76,8 @@ function generateLevel(levelLength) {
 
     addedTiles = 0;
     firstTime = true;
+    stuck = false;
+    order = [];
   }
 
   function generate() {
@@ -99,15 +104,14 @@ function generateLevel(levelLength) {
       if (firstTime) {
         randomTile = Math.floor(Math.random() * tiles.length);
       } else {
-        console.warn(
-          "I'm stuck, they call me gaseous clay. Leaving tile blank :("
-        );
+        stuck = true;
         return;
       }
     }
 
     if (randomTile) {
       addedTiles += 1;
+      order.push([x, y]);
     }
 
     level[y][x] = randomTile;
@@ -218,9 +222,13 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 ctx.scale(4, 4);
-ctx.translate(0, 0);
+ctx.translate(12 * 4, 12 * 4);
 
-function redrawCanvas(level) {
+function redrawCanvas(olevel) {
+  const level = olevel.level;
+  const first = olevel.order[0];
+  const last = olevel.order[olevel.order.length - 1];
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let y = 0; y < level.length; y++) {
@@ -231,6 +239,14 @@ function redrawCanvas(level) {
         for (let yy = 0; yy < 12; yy++) {
           for (let xx = 0; xx < 12; xx++) {
             if (currentTile.data[yy][xx]) {
+              if (first[0] === x && first[1] === y) {
+                ctx.fillStyle = "#00ff00";
+              } else if (last[0] === x && last[1] === y) {
+                ctx.fillStyle = "#ff0000";
+              } else {
+                ctx.fillStyle = "#000000";
+              }
+
               ctx.fillRect(x * 12 + xx, y * 12 + yy, 1, 1);
             }
           }
@@ -240,9 +256,8 @@ function redrawCanvas(level) {
   }
 }
 
-let level = generateLevel(32);
-console.log(level);
-redrawCanvas(level);
-let level2 = generateLevel(32);
-console.log(level2);
-redrawCanvas(level2);
+setInterval(() => {
+  let level = generateLevel(12);
+
+  redrawCanvas(level);
+}, 1000);
