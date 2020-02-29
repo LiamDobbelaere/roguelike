@@ -115,34 +115,24 @@ function generate() {
 
   let scheduledNextTiles = [];
 
-  const topEntropy = findRandomTileChoices(
-    x,
-    yToTop,
-    level,
-    levelWidth,
-    levelHeight
-  ).length;
-  const rightEntropy = findRandomTileChoices(
-    xToRight,
-    y,
-    level,
-    levelWidth,
-    levelHeight
-  ).length;
-  const bottomEntropy = findRandomTileChoices(
-    x,
-    yToBottom,
-    level,
-    levelWidth,
-    levelHeight
-  ).length;
-  const leftEntropy = findRandomTileChoices(
-    xToLeft,
-    y,
-    level,
-    levelWidth,
-    levelHeight
-  ).length;
+  const topEntropy =
+    yToTop >= 0
+      ? findRandomTileChoices(x, yToTop, level, levelWidth, levelHeight).length
+      : 0;
+  const rightEntropy =
+    xToRight < levelWidth
+      ? findRandomTileChoices(xToRight, y, level, levelWidth, levelHeight)
+          .length
+      : 0;
+  const bottomEntropy =
+    yToBottom < levelHeight
+      ? findRandomTileChoices(x, yToBottom, level, levelWidth, levelHeight)
+          .length
+      : 0;
+  const leftEntropy =
+    xToLeft >= 0
+      ? findRandomTileChoices(xToLeft, y, level, levelWidth, levelHeight).length
+      : 0;
 
   console.log({
     topEntropy,
