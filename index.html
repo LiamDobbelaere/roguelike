@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roguelike</title>
+  </head>
+  <body>
+    <canvas
+      id="canvas"
+      width="1800"
+      height="900"
+      style="width: 1800x; height: 900px; border: 1px solid black"
+    >
+    </canvas>
+
+    <script>
+      function Tile(index, data, top, right, bottom, left) {
+        this.index = index;
+        this.data = data;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+        this.left = left;
+      }
+    </script>
+    <script src="./tileset1.rlt.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
