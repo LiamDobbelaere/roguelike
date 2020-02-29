@@ -214,14 +214,13 @@ function shuffle(a) {
   return a;
 }
 
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+ctx.scale(4, 4);
+ctx.translate(0, 0);
+
 function redrawCanvas(level) {
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.scale(2, 2);
-  ctx.translate(0, 0);
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let y = 0; y < level.length; y++) {
@@ -241,5 +240,9 @@ function redrawCanvas(level) {
   }
 }
 
-const level = generateLevel(84);
+let level = generateLevel(32);
+console.log(level);
 redrawCanvas(level);
+let level2 = generateLevel(32);
+console.log(level2);
+redrawCanvas(level2);
