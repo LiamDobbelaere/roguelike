@@ -162,6 +162,7 @@ for i in range(0, len(tiles_extended)):
 
 min_neighbours = 1000000
 max_neighbours = 0
+total_neighbours = 0
 for i in tiles_neighbours:
     neighbour_count = (
         len(tiles_neighbours[i]["top"])
@@ -169,6 +170,8 @@ for i in tiles_neighbours:
         + len(tiles_neighbours[i]["bottom"])
         + len(tiles_neighbours[i]["left"])
     )
+
+    total_neighbours += neighbour_count
 
     if neighbour_count == 0:
         print("Warning: Tile with index " + str(i) + " has no neighbours!")
@@ -181,6 +184,7 @@ for i in tiles_neighbours:
 
 print("min_neighbours:" + str(min_neighbours))
 print("max_neighbours:" + str(max_neighbours))
+print("total_neighbours:" + str(total_neighbours))
 
 # Write all gathered info to a js file
 with open(sys.argv[1].split(".")[0] + ".rlt.js", "w") as file:

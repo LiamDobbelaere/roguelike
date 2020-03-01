@@ -1,5 +1,26 @@
 const tiles = tileset1;
 
+/*
+Tileset checklist:
+trbl
+0000 x
+0001 x
+0010 x
+0011 x
+0100 x
+0101 x
+0110 x
+0111 x
+1000 x
+1001 x
+1010 x
+1011 x
+1100 x
+1101 x
+1110 x
+1111 x
+*/
+
 function findRandomTileChoices(x, y, level, levelWidth, levelHeight) {
   let xToRight = x + 1;
   let xToLeft = x - 1;
@@ -69,6 +90,10 @@ function generateLevel(levelLength) {
     for (let i = 0; i < level.length; i++) {
       level[i] = new Array(levelWidth);
       visited[i] = new Array(levelWidth);
+
+      for (let j = 0; j < level[i].length; j++) {
+        level[i][j] = undefined;
+      }
     }
 
     nextTile = [[startY, startX, "none"]];
@@ -269,51 +294,89 @@ function redrawCanvas(olevel) {
   }
 }
 
-function frame(expandedLevel) {
-  if (keyMap[37]) camX -= 6;
-  if (keyMap[38]) camY -= 6;
-  if (keyMap[39]) camX += 6;
-  if (keyMap[40]) camY += 6;
+let last_t = 0;
+function frame(t, expandedLevel) {
+  const dt = t - last_t;
+
+  if (keyMap[37]) camX -= 0.2 * dt;
+  if (keyMap[38]) camY -= 0.2 * dt;
+  if (keyMap[39]) camX += 0.2 * dt;
+  if (keyMap[40]) camY += 0.2 * dt;
 
   render(expandedLevel);
 
-  requestAnimationFrame(() => {
-    frame(expandedLevel);
+  last_t = t;
+
+  requestAnimationFrame(t => {
+    frame(t, expandedLevel);
   });
 }
 
 function render(expandedLevel) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (let y = 0; y < expandedLevel.length; y++) {
-    for (let x = 0; x < expandedLevel[y].length; x++) {
+  const clampedStartX = Math.min(
+    Math.max(Math.round((camX - tileSize) / tileSize), 0),
+    expandedLevel[0].length
+  );
+  const clampedStartY = Math.min(
+    Math.max(Math.round((camY - tileSize) / tileSize), 0),
+    expandedLevel.length
+  );
+
+  const clampedEndX = Math.max(
+    Math.min(
+      clampedStartX + Math.round(canvas.width / 12),
+      expandedLevel[0].length
+    ),
+    0
+  );
+  const clampedEndY = Math.max(
+    Math.min(
+      clampedStartY + Math.round(canvas.height / 12),
+      expandedLevel.length
+    ),
+    0
+  );
+
+  for (let y = clampedStartY; y < clampedEndY; y++) {
+    for (let x = clampedStartX; x < clampedEndX; x++) {
       const tiledata = expandedLevel[y][x];
 
       if (tiledata) {
-        /*if (first[0] === x && first[1] === y) {
-          ctx.fillStyle = "#00ff00";
-        } else if (last[0] === x && last[1] === y) {
-          ctx.fillStyle = "#ff0000";
-        } else {
-          ctx.fillStyle = "#000000";
-        }*/
+        drawTile(ctx, x, y, camX, camY, 0);
+      } else {
+        const nt = y - 1 >= 0 ? !expandedLevel[y - 1][x] : false;
+        const nr =
+          x + 1 < expandedLevel[y].length ? !expandedLevel[y][x + 1] : false;
+        const nb =
+          y + 1 < expandedLevel.length ? !expandedLevel[y + 1][x] : false;
+        const nl = x - 1 >= 0 ? !expandedLevel[y][x - 1] : false;
 
-        ctx.drawImage(
-          tileset,
-          0,
-          0,
-          tileSize,
-          tileSize,
-          x * tileSize - camX,
-          y * tileSize - camY,
-          tileSize,
-          tileSize
-        );
+        const pattern = `${+nt}${+nr}${+nb}${+nl}`;
+        const idx = parseInt(pattern, 2);
+
+        drawTile(ctx, x, y, camX, camY, 1 + idx);
       }
     }
   }
+}
 
-  //requestAnimationFrame(render);
+function drawTile(ctx, x, y, camX, camY, tileIndex) {
+  const tileX = tileIndex % 10;
+  const tileY = Math.floor(tileIndex / 10);
+
+  ctx.drawImage(
+    tileset,
+    tileX * 12,
+    tileY * 12,
+    tileSize,
+    tileSize,
+    x * tileSize - camX,
+    y * tileSize - camY,
+    tileSize,
+    tileSize
+  );
 }
 
 /**
@@ -337,10 +400,13 @@ function expandLevel(olevel) {
       if (currentTile) {
         for (let yy = 0; yy < 12; yy++) {
           for (let xx = 0; xx < 12; xx++) {
-            if (currentTile.data[yy][xx]) {
-              expandedLevel[y * 12 + yy][x * 12 + xx] =
-                currentTile.data[yy][xx];
-            }
+            expandedLevel[y * 12 + yy][x * 12 + xx] = currentTile.data[yy][xx];
+          }
+        }
+      } else {
+        for (let yy = 0; yy < 12; yy++) {
+          for (let xx = 0; xx < 12; xx++) {
+            expandedLevel[y * 12 + yy][x * 12 + xx] = 0;
           }
         }
       }
@@ -357,8 +423,8 @@ let start = level.order[0];
 camX = start[0] * 12 * 12;
 camY = start[1] * 12 * 12;
 
-requestAnimationFrame(() => {
-  frame(expanded);
+requestAnimationFrame(t => {
+  frame(t, expanded);
 });
 
 /*
