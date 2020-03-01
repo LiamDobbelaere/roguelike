@@ -218,11 +218,24 @@ function shuffle(a) {
   return a;
 }
 
+const tileSize = 12;
+const tileset = document.getElementById("tileset");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-
 ctx.scale(4, 4);
-ctx.translate(12 * 4, 12 * 4);
+ctx.imageSmoothingEnabled = false;
+
+let camX = 0;
+let camY = 0;
+
+const keyMap = {};
+const keyInputFn = function(e) {
+  e = e || event;
+  keyMap[e.keyCode] = e.type == "keydown";
+};
+
+window.addEventListener("keydown", keyInputFn);
+window.addEventListener("keyup", keyInputFn);
 
 function redrawCanvas(olevel) {
   const level = olevel.level;
@@ -256,8 +269,104 @@ function redrawCanvas(olevel) {
   }
 }
 
-setInterval(() => {
+function frame(expandedLevel) {
+  if (keyMap[37]) camX -= 6;
+  if (keyMap[38]) camY -= 6;
+  if (keyMap[39]) camX += 6;
+  if (keyMap[40]) camY += 6;
+
+  render(expandedLevel);
+
+  requestAnimationFrame(() => {
+    frame(expandedLevel);
+  });
+}
+
+function render(expandedLevel) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let y = 0; y < expandedLevel.length; y++) {
+    for (let x = 0; x < expandedLevel[y].length; x++) {
+      const tiledata = expandedLevel[y][x];
+
+      if (tiledata) {
+        /*if (first[0] === x && first[1] === y) {
+          ctx.fillStyle = "#00ff00";
+        } else if (last[0] === x && last[1] === y) {
+          ctx.fillStyle = "#ff0000";
+        } else {
+          ctx.fillStyle = "#000000";
+        }*/
+
+        ctx.drawImage(
+          tileset,
+          0,
+          0,
+          tileSize,
+          tileSize,
+          x * tileSize - camX,
+          y * tileSize - camY,
+          tileSize,
+          tileSize
+        );
+      }
+    }
+  }
+
+  //requestAnimationFrame(render);
+}
+
+/**
+ * Expands a level from tiles into a grid
+ *
+ * @param {*} level The level returned by generateLevel
+ */
+function expandLevel(olevel) {
+  const level = olevel.level;
+  const width = level[0].length;
+  const height = level.length;
+  const expandedLevel = new Array(height * 12);
+  for (let i = 0; i < expandedLevel.length; i++) {
+    expandedLevel[i] = new Array(width);
+  }
+
+  for (let y = 0; y < level.length; y++) {
+    for (let x = 0; x < level[y].length; x++) {
+      const currentTile = tiles[level[y][x]];
+
+      if (currentTile) {
+        for (let yy = 0; yy < 12; yy++) {
+          for (let xx = 0; xx < 12; xx++) {
+            if (currentTile.data[yy][xx]) {
+              expandedLevel[y * 12 + yy][x * 12 + xx] =
+                currentTile.data[yy][xx];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return expandedLevel;
+}
+
+let level = generateLevel(12);
+let expanded = expandLevel(level);
+let start = level.order[0];
+
+camX = start[0] * 12 * 12;
+camY = start[1] * 12 * 12;
+
+requestAnimationFrame(() => {
+  frame(expanded);
+});
+
+/*
+
+*/
+
+/*setInterval(() => {
   let level = generateLevel(12);
 
   redrawCanvas(level);
-}, 1000);
+}, 500);*/
