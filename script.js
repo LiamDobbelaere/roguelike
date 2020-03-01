@@ -69,7 +69,7 @@ function generateLevel(levelLength) {
   const startX = Math.floor(levelWidth / 2);
   const startY = Math.floor(levelHeight / 2);
 
-  let level, visited, addedTiles, nextTile, firstTime, stuck, order;
+  let level, visited, addedTiles, nextTile, firstTime, stuck, order, objects;
 
   initialize();
   while (addedTiles < levelLength || stuck) {
@@ -81,7 +81,9 @@ function generateLevel(levelLength) {
 
   return {
     level,
-    order
+    order,
+    levelExpanded: expandLevel(level),
+    objects
   };
 
   function initialize() {
@@ -103,6 +105,7 @@ function generateLevel(levelLength) {
     firstTime = true;
     stuck = false;
     order = [];
+    objects = [];
   }
 
   function generate() {
@@ -137,6 +140,26 @@ function generateLevel(levelLength) {
     if (randomTile) {
       addedTiles += 1;
       order.push([x, y]);
+
+      for (let aa = 0; aa < 2; aa++) {
+        const keyLocations = tiles[randomTile].keyLocations;
+        const randomObject =
+          keyLocations[Math.floor(Math.random() * keyLocations.length)];
+        let objecttype = 10;
+        if (addedTiles === levelLength) {
+          objecttype = 0;
+        }
+
+        objects.push({
+          x,
+          y,
+          object: {
+            x: randomObject[0],
+            y: randomObject[1],
+            type: objecttype
+          }
+        });
+      }
     }
 
     level[y][x] = randomTile;
@@ -245,6 +268,7 @@ function shuffle(a) {
 
 const tileSize = 12;
 const tileset = document.getElementById("tileset");
+const objects = document.getElementById("objects");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 ctx.scale(4, 4);
@@ -267,7 +291,7 @@ function redrawCanvas(olevel) {
   const first = olevel.order[0];
   const last = olevel.order[olevel.order.length - 1];
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //ctx.clearRect(0, 0, canvas.width / 4, canvas.height / 4);
 
   for (let y = 0; y < level.length; y++) {
     for (let x = 0; x < level[y].length; x++) {
@@ -295,7 +319,7 @@ function redrawCanvas(olevel) {
 }
 
 let last_t = 0;
-function frame(t, expandedLevel) {
+function frame(t, level) {
   const dt = t - last_t;
 
   if (keyMap[37]) camX -= 0.2 * dt;
@@ -303,16 +327,18 @@ function frame(t, expandedLevel) {
   if (keyMap[39]) camX += 0.2 * dt;
   if (keyMap[40]) camY += 0.2 * dt;
 
-  render(expandedLevel);
+  render(level);
 
   last_t = t;
 
   requestAnimationFrame(t => {
-    frame(t, expandedLevel);
+    frame(t, level);
   });
 }
 
-function render(expandedLevel) {
+function render(level) {
+  const expandedLevel = level.levelExpanded;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const clampedStartX = Math.min(
@@ -342,9 +368,12 @@ function render(expandedLevel) {
   for (let y = clampedStartY; y < clampedEndY; y++) {
     for (let x = clampedStartX; x < clampedEndX; x++) {
       const tiledata = expandedLevel[y][x];
+      const mapX = Math.floor(x / 12);
+      const mapY = Math.floor(y / 12);
+      let color = (mapX + mapY) % 3;
 
       if (tiledata) {
-        drawTile(ctx, x, y, camX, camY, 0);
+        drawTile(ctx, x, y, camX, camY, 20 + color);
       } else {
         const nt = y - 1 >= 0 ? !expandedLevel[y - 1][x] : false;
         const nr =
@@ -355,10 +384,17 @@ function render(expandedLevel) {
 
         const idx = nl * 1 + nb * 2 + nr * 4 + nt * 8;
 
-        drawTile(ctx, x, y, camX, camY, 1 + idx);
+        drawTile(ctx, x, y, camX, camY, idx);
       }
     }
   }
+
+  level.objects.forEach(object => {
+    const expandedX = object.x * 12 + object.object.x;
+    const expandedY = object.y * 12 + object.object.y;
+
+    drawObject(ctx, expandedX, expandedY, camX, camY, object.object.type);
+  });
 }
 
 function drawTile(ctx, x, y, camX, camY, tileIndex) {
@@ -378,13 +414,29 @@ function drawTile(ctx, x, y, camX, camY, tileIndex) {
   );
 }
 
+function drawObject(ctx, x, y, camX, camY, tileIndex) {
+  const tileX = tileIndex % 10;
+  const tileY = Math.floor(tileIndex / 10);
+
+  ctx.drawImage(
+    objects,
+    tileX * 12,
+    tileY * 12,
+    tileSize,
+    tileSize,
+    x * tileSize - camX,
+    y * tileSize - camY,
+    tileSize,
+    tileSize
+  );
+}
+
 /**
  * Expands a level from tiles into a grid
  *
  * @param {*} level The level returned by generateLevel
  */
-function expandLevel(olevel) {
-  const level = olevel.level;
+function expandLevel(level) {
   const width = level[0].length;
   const height = level.length;
   const expandedLevel = new Array(height * 12);
@@ -416,14 +468,13 @@ function expandLevel(olevel) {
 }
 
 let level = generateLevel(12);
-let expanded = expandLevel(level);
 let start = level.order[0];
 
 camX = start[0] * 12 * 12;
 camY = start[1] * 12 * 12;
 
 requestAnimationFrame(t => {
-  frame(t, expanded);
+  frame(t, level);
 });
 
 /*

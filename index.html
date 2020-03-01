@@ -6,6 +6,7 @@
     <title>Roguelike</title>
   </head>
   <body>
+    <img style="display: none" src="objects.png" id="objects" />
     <img style="display: none" src="tileset_render.png" id="tileset" />
     <canvas
       id="canvas"
@@ -16,14 +17,14 @@
     </canvas>
 
     <script>
-      function Tile(index, data, top, right, bottom, left, keylocations) {
+      function Tile(index, data, top, right, bottom, left, keyLocations) {
         this.index = index;
         this.data = data;
         this.top = top;
         this.right = right;
         this.bottom = bottom;
         this.left = left;
-        this.keylocations = keylocations;
+        this.keyLocations = keyLocations;
       }
     </script>
     <script src="./tileset1.rlt.js"></script>
