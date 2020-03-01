@@ -353,8 +353,7 @@ function render(expandedLevel) {
           y + 1 < expandedLevel.length ? !expandedLevel[y + 1][x] : false;
         const nl = x - 1 >= 0 ? !expandedLevel[y][x - 1] : false;
 
-        const pattern = `${+nt}${+nr}${+nb}${+nl}`;
-        const idx = parseInt(pattern, 2);
+        const idx = nl * 1 + nb * 2 + nr * 4 + nt * 8;
 
         drawTile(ctx, x, y, camX, camY, 1 + idx);
       }

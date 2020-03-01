@@ -8,8 +8,18 @@ im = Image.open(sys.argv[1], "r")
 width, height = im.size
 pixel_values = list(im.getdata())
 
+
+def matchColor(col, r, g, b):
+    return col[0] == r and col[1] == g and col[2] == b
+
+
 for n in range(0, width * height):
-    pixel_values[n] = pixel_values[n][0] // 255
+    newvalue = 0
+    if matchColor(pixel_values[n], 255, 255, 255):
+        newvalue = 1
+    elif matchColor(pixel_values[n], 0, 0, 255):
+        newvalue = 2
+    pixel_values[n] = newvalue
 
 arrpixels = np.array(pixel_values).reshape((width, height))
 
@@ -144,7 +154,20 @@ def oneMatchingBorderBlockValidator(tileA, tileB):
     return validation
 
 
-print("Calculating neighbours...")
+tiles_keylocations = {}
+
+
+def calculateKeyLocations(tile, index):
+    if index not in tiles_keylocations:
+        tiles_keylocations[index] = []
+
+    for y in range(0, len(tile)):
+        for x in range(0, len(tile[y])):
+            if tile[y][x] == 2:
+                tiles_keylocations[index].append([x, y])
+
+
+print("Calculating neighbours and key locations...")
 # first time we run through 0 to n, then 1 to n, 2 to n,..
 # this is because with tiles A-B-C, only A-A, A-B, A-C, B-B, B-C, C-C needs to be calculated
 # since the reverse relation can be inferred, A-B = B-A for instance
@@ -159,6 +182,7 @@ for i in range(0, len(tiles_extended)):
             + len(tiles_neighbours[i]["bottom"])
             + len(tiles_neighbours[i]["left"])
         )
+    calculateKeyLocations(tiles_extended[i], i)
 
 min_neighbours = 1000000
 max_neighbours = 0
@@ -220,8 +244,11 @@ with open(sys.argv[1].split(".")[0] + ".rlt.js", "w") as file:
                     + ",".join([str(i) for i in tiles_neighbours[idx]["left"]])
                     + "]"
                 )
+                keylocs = (
+                    ",\n[" + ",".join([str(i) for i in tiles_keylocations[idx]]) + "]"
+                )
 
-                closeb = "]" + topnb + rightnb + bottomnb + leftnb + ")"
+                closeb = "]" + topnb + rightnb + bottomnb + leftnb + keylocs + ")"
             if y == 11 and n == len(tiles_extended):
                 endcomma = ""
 
