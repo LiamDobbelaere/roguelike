@@ -352,14 +352,16 @@ function render(level) {
 
   const clampedEndX = Math.max(
     Math.min(
-      clampedStartX + Math.round(canvas.width / 12),
+      clampedStartX +
+        Math.round((canvas.width + tileSize * 2 * 4) / (tileSize * 4)),
       expandedLevel[0].length
     ),
     0
   );
   const clampedEndY = Math.max(
     Math.min(
-      clampedStartY + Math.round(canvas.height / 12),
+      clampedStartY +
+        Math.round((canvas.height + tileSize * 2 * 4) / (tileSize * 4)),
       expandedLevel.length
     ),
     0
@@ -390,8 +392,8 @@ function render(level) {
   }
 
   level.objects.forEach(object => {
-    const expandedX = object.x * 12 + object.object.x;
-    const expandedY = object.y * 12 + object.object.y;
+    const expandedX = object.x * tileSize + object.object.x;
+    const expandedY = object.y * tileSize + object.object.y;
 
     drawObject(ctx, expandedX, expandedY, camX, camY, object.object.type);
   });
@@ -403,8 +405,8 @@ function drawTile(ctx, x, y, camX, camY, tileIndex) {
 
   ctx.drawImage(
     tileset,
-    tileX * 12,
-    tileY * 12,
+    tileX * tileSize,
+    tileY * tileSize,
     tileSize,
     tileSize,
     x * tileSize - camX,
@@ -420,8 +422,8 @@ function drawObject(ctx, x, y, camX, camY, tileIndex) {
 
   ctx.drawImage(
     objects,
-    tileX * 12,
-    tileY * 12,
+    tileX * tileSize,
+    tileY * tileSize,
     tileSize,
     tileSize,
     x * tileSize - camX,
@@ -439,7 +441,7 @@ function drawObject(ctx, x, y, camX, camY, tileIndex) {
 function expandLevel(level) {
   const width = level[0].length;
   const height = level.length;
-  const expandedLevel = new Array(height * 12);
+  const expandedLevel = new Array(height * tileSize);
   for (let i = 0; i < expandedLevel.length; i++) {
     expandedLevel[i] = new Array(width);
   }
@@ -449,15 +451,16 @@ function expandLevel(level) {
       const currentTile = tiles[level[y][x]];
 
       if (currentTile) {
-        for (let yy = 0; yy < 12; yy++) {
-          for (let xx = 0; xx < 12; xx++) {
-            expandedLevel[y * 12 + yy][x * 12 + xx] = currentTile.data[yy][xx];
+        for (let yy = 0; yy < tileSize; yy++) {
+          for (let xx = 0; xx < tileSize; xx++) {
+            expandedLevel[y * tileSize + yy][x * tileSize + xx] =
+              currentTile.data[yy][xx];
           }
         }
       } else {
-        for (let yy = 0; yy < 12; yy++) {
-          for (let xx = 0; xx < 12; xx++) {
-            expandedLevel[y * 12 + yy][x * 12 + xx] = 0;
+        for (let yy = 0; yy < tileSize; yy++) {
+          for (let xx = 0; xx < tileSize; xx++) {
+            expandedLevel[y * tileSize + yy][x * tileSize + xx] = 0;
           }
         }
       }
@@ -470,19 +473,23 @@ function expandLevel(level) {
 let level = generateLevel(12);
 let start = level.order[0];
 
-camX = start[0] * 12 * 12;
-camY = start[1] * 12 * 12;
+camX = start[0] * tileSize * tileSize;
+camY = start[1] * tileSize * tileSize;
 
 requestAnimationFrame(t => {
   frame(t, level);
 });
 
 /*
+TODO:
+- Need more level generation parameters, you need to be able to add items like 
+logs (with messages in them), weapons (with stats), enemy types, enemy population etc..
+Also put the player location somewhere
+- Given a generated level, create a Game class that enables you to control the player and move him around,
+that allows logs to be played, weapons to be collected, enemies to be attacked, all in a turn based manner
+Enemies should also move after every turn.
+After every turn, there's a list of things that need to appear on the screen, mostly attack messages, pickup messages and log messages
+The level needs to be rerendered as objects are shifted around in the level
+- The game window needs to send input to the Game
 
 */
-
-/*setInterval(() => {
-  let level = generateLevel(12);
-
-  redrawCanvas(level);
-}, 500);*/
