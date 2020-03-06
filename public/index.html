@@ -4,17 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roguelike</title>
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+
+      canvas {
+        width: 640px;
+        height: 480px;
+        background-color: black;
+      }
+    </style>
   </head>
   <body>
     <img style="display: none" src="objects.png" id="objects" />
     <img style="display: none" src="tileset_render.png" id="tileset" />
-    <canvas
-      id="canvas"
-      width="640"
-      height="480"
-      style="background-color: black; width: 640px; height: 480px; border: 1px solid black"
-    >
-    </canvas>
+    <canvas id="canvas" width="640" height="480" tabindex="1"> </canvas>
 
     <script>
       function Tile(index, data, top, right, bottom, left, keyLocations) {

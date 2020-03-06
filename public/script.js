@@ -278,8 +278,14 @@ let camX = 0;
 let camY = 0;
 
 const keyMap = {};
+const usedKeys = [37, 38, 39, 40];
 const keyInputFn = function(e) {
   e = e || event;
+
+  if (usedKeys.includes(e.keyCode)) {
+    e.preventDefault();
+  }
+
   keyMap[e.keyCode] = e.type == "keydown";
 };
 
@@ -480,7 +486,29 @@ requestAnimationFrame(t => {
   frame(t, level);
 });
 
+function RogueGame() {}
+
 /*
+Terran Empire    
+earth with very hi tech plasma weaponry, mechs and hover aircrafts and tanks kinda like JDA from Dark Reign 2
+
+the reich
+super industrial fascists from a colony that made a empire with WW2 theme military and mechanical mechs
+
+Bandidos
+outlaw bandit kingdom that rose from neglected anarchist worlds that uses shitty weaponry but excellent guerilla and weapon tactics    kinda like Orks
+
+the vermin 
+humanoid super intelligent rat species that developed interstellar space travel super fast in their evolution and uses a lot of mechs and power armors         kinda like Tau
+
+space undead
+revived ultra ancient skeletons and zombies from a extinct human warrior race, looks like heavily armored vikings.
+uses huge flesh/bone golems with ancient magic powers for siege and artillery
+
+
+the bots
+a hive mind robot race that was engineered by a unknown faction. they use huge turtle spider like hive robots to produce and control the lesser bots. travels from planet to planet to kill all opposition and consume all resources to produce more bots.
+
 TODO:
 - Need more level generation parameters, you need to be able to add items like 
 logs (with messages in them), weapons (with stats), enemy types, enemy population etc..
