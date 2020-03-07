@@ -1,0 +1,45 @@
+{
+  "bundle": {
+    "commonSourceDirectory": "./src",
+    "sourceFiles": [
+      "./src/game.ts",
+      "./src/index.ts",
+      "./src/tileset1.rlt.ts"
+    ],
+    "js": {
+      "sections": [
+        {
+          "pos": 0,
+          "end": 13,
+          "kind": "prologue",
+          "data": "use strict"
+        },
+        {
+          "pos": 15,
+          "end": 605227,
+          "kind": "text"
+        }
+      ],
+      "sources": {
+        "prologues": [
+          {
+            "file": 0,
+            "text": "",
+            "directives": [
+              {
+                "pos": -1,
+                "end": -1,
+                "expression": {
+                  "pos": -1,
+                  "end": -1,
+                  "text": "use strict"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "version": "3.8.3"
+}

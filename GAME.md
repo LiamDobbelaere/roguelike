@@ -10,3 +10,5 @@ Pick one from this list when you don't know what to work on, write cool ideas fo
 - Procedural enemies
 - Co-op play on same screen
 - Co-op play online
+- Multiple stories per faction
+- New Game+

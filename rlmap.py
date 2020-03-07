@@ -1,5 +1,5 @@
 # Written in Python 3.8, with numpy and Pillow installed
-
+import json
 import numpy as np
 from PIL import Image
 import sys
@@ -93,20 +93,28 @@ def calculateValidConnections(tileA, tileAIndex, tileB, tileBIndex, validatorfun
 
     # we always add the reverse relation too, if a.right matches with b.left, then b.left matches with a.right
     if validation["right"]:
-        tiles_neighbours[tileAIndex]["right"].append(tileBIndex)
-        tiles_neighbours[tileBIndex]["left"].append(tileAIndex)
+        if tileBIndex not in tiles_neighbours[tileAIndex]["right"]:
+            tiles_neighbours[tileAIndex]["right"].append(tileBIndex)
+        if tileAIndex not in tiles_neighbours[tileBIndex]["left"]:
+            tiles_neighbours[tileBIndex]["left"].append(tileAIndex)
 
     if validation["left"]:
-        tiles_neighbours[tileAIndex]["left"].append(tileBIndex)
-        tiles_neighbours[tileBIndex]["right"].append(tileAIndex)
+        if tileBIndex not in tiles_neighbours[tileAIndex]["left"]:
+            tiles_neighbours[tileAIndex]["left"].append(tileBIndex)
+        if tileAIndex not in tiles_neighbours[tileBIndex]["right"]:
+            tiles_neighbours[tileBIndex]["right"].append(tileAIndex)
 
     if validation["bottom"]:
-        tiles_neighbours[tileAIndex]["bottom"].append(tileBIndex)
-        tiles_neighbours[tileBIndex]["top"].append(tileAIndex)
+        if tileBIndex not in tiles_neighbours[tileAIndex]["bottom"]:
+            tiles_neighbours[tileAIndex]["bottom"].append(tileBIndex)
+        if tileAIndex not in tiles_neighbours[tileBIndex]["top"]:
+            tiles_neighbours[tileBIndex]["top"].append(tileAIndex)
 
     if validation["top"]:
-        tiles_neighbours[tileAIndex]["top"].append(tileBIndex)
-        tiles_neighbours[tileBIndex]["bottom"].append(tileAIndex)
+        if tileBIndex not in tiles_neighbours[tileAIndex]["top"]:
+            tiles_neighbours[tileAIndex]["top"].append(tileBIndex)
+        if tileAIndex not in tiles_neighbours[tileBIndex]["bottom"]:
+            tiles_neighbours[tileBIndex]["bottom"].append(tileAIndex)
 
 
 def arrayOrWithValue(a, b, v):
@@ -172,7 +180,7 @@ print("Calculating neighbours and key locations...")
 # this is because with tiles A-B-C, only A-A, A-B, A-C, B-B, B-C, C-C needs to be calculated
 # since the reverse relation can be inferred, A-B = B-A for instance
 for i in range(0, len(tiles_extended)):
-    for j in range(0, len(tiles_extended)):
+    for j in range(i, len(tiles_extended)):
         calculateValidConnections(
             tiles_extended[i], i, tiles_extended[j], j, oneMatchingBorderBlockValidator,
         )
@@ -210,56 +218,127 @@ print("min_neighbours:" + str(min_neighbours))
 print("max_neighbours:" + str(max_neighbours))
 print("total_neighbours:" + str(total_neighbours))
 
-# Write all gathered info to a js file
-with open(sys.argv[1].split(".")[0] + ".rlt.js", "w") as file:
-    file.write("const " + sys.argv[1].split(".")[0] + " = [\n")
-    n = 0
-    for idx, tile in enumerate(tiles_extended):
-        n += 1
-        need_open = True
-        for y in range(0, 12):
-            openb = ""
-            closeb = ""
-            endcomma = ","
-            if need_open:
-                openb = "new Tile(" + str(idx) + ",[\n"
-            if y == 11:
-                topnb = (
-                    ",\n["
-                    + ",".join([str(i) for i in tiles_neighbours[idx]["top"]])
-                    + "]"
-                )
-                rightnb = (
-                    ",\n["
-                    + ",".join([str(i) for i in tiles_neighbours[idx]["right"]])
-                    + "]"
-                )
-                bottomnb = (
-                    ",\n["
-                    + ",".join([str(i) for i in tiles_neighbours[idx]["bottom"]])
-                    + "]"
-                )
-                leftnb = (
-                    ",\n["
-                    + ",".join([str(i) for i in tiles_neighbours[idx]["left"]])
-                    + "]"
-                )
-                keylocs = (
-                    ",\n[" + ",".join([str(i) for i in tiles_keylocations[idx]]) + "]"
-                )
 
-                closeb = "]" + topnb + rightnb + bottomnb + leftnb + keylocs + ")"
-            if y == 11 and n == len(tiles_extended):
-                endcomma = ""
+def would_gain_something(inp, total_len):
+    return len(inp) > total_len // 2
 
-            file.write(
-                openb
-                + "["
-                + ",".join([str(i) for i in tile[y]])
-                + "]"
-                + closeb
-                + endcomma
-                + "\n"
-            )
-            need_open = False
-    file.write("];")
+
+def inverse(a, target):
+    result = []
+    # return all elements of target that are not in a
+    for target_item in target:
+        if target_item not in a:
+            result.append(target_item)
+
+    return result
+
+
+json_export_array = []
+for idx, tile in enumerate(tiles_extended):
+    tile_data = []
+    for y in range(0, len(tile)):
+        tile_data.append(int("".join([str(min(i, 1)) for i in tile[y]]), 2))
+
+    minimum_x = -1
+    for i in range(0, len(tile_data)):
+        if tile_data[i] == 0:
+            minimum_x = i
+        else:
+            break
+
+    minimum_x = min(minimum_x + 1, len(tile_data) - 1)
+
+    tile_data = tile_data[minimum_x:]
+
+    top_key = "t"
+    right_key = "r"
+    bottom_key = "b"
+    left_key = "l"
+
+    nb_top = tiles_neighbours[idx]["top"]
+    nb_right = tiles_neighbours[idx]["right"]
+    nb_bottom = tiles_neighbours[idx]["bottom"]
+    nb_left = tiles_neighbours[idx]["left"]
+
+    target = range(len(tiles_extended))
+
+    if would_gain_something(nb_top, len(tiles_extended)):
+        nb_top = inverse(nb_top, target)
+        top_key = "T"
+
+    if would_gain_something(nb_right, len(tiles_extended)):
+        nb_right = inverse(nb_right, target)
+        right_key = "R"
+
+    if would_gain_something(nb_bottom, len(tiles_extended)):
+        nb_bottom = inverse(nb_bottom, target)
+        bottom_key = "B"
+
+    if would_gain_something(nb_left, len(tiles_extended)):
+        nb_left = inverse(nb_left, target)
+        left_key = "L"
+
+    json_export_object = {
+        "d": tile_data,
+        "k": [item for sublist in tiles_keylocations[idx] for item in sublist],
+    }
+
+    if len(nb_top) > 0:
+        json_export_object[top_key] = nb_top
+    if len(nb_right) > 0:
+        json_export_object[right_key] = nb_right
+    if len(nb_bottom) > 0:
+        json_export_object[bottom_key] = nb_bottom
+    if len(nb_left) > 0:
+        json_export_object[left_key] = nb_left
+
+    json_export_array.append(json_export_object)
+
+
+def to_json(o, level=0):
+    ret = ""
+    NEWLINE = "\n"
+    INDENT = 0
+    SPACE = ""
+
+    if isinstance(o, dict):
+        ret += "{" + NEWLINE
+        comma = ""
+        for k, v in o.items():
+            ret += comma
+            comma = "," + NEWLINE
+            ret += SPACE * INDENT * (level + 1)
+            ret += '"' + str(k) + '":' + SPACE
+            ret += to_json(v, level + 1)
+
+        ret += NEWLINE + SPACE * INDENT * level + "}"
+    elif isinstance(o, str):
+        ret += '"' + o + '"'
+    elif isinstance(o, list):
+        ret += "[" + ",".join([to_json(e, level + 1) for e in o]) + "]"
+    elif isinstance(o, bool):
+        ret += "true" if o else "false"
+    elif isinstance(o, int):
+        ret += str(o)
+    elif isinstance(o, float):
+        ret += "%.7g" % o
+    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
+        ret += "[" + ",".join(map(str, o.flatten().tolist())) + "]"
+    elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
+        ret += "[" + ",".join(map(lambda x: "%.7g" % x, o.flatten().tolist())) + "]"
+    elif o is None:
+        ret += "null"
+    else:
+        raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
+    return ret
+
+
+with open(sys.argv[2], "w") as file:
+    file.write(
+        "function data_"
+        + sys.argv[1].split(".")[0]
+        + "() { return "
+        + to_json(json_export_array)
+        + " } "
+    )
+

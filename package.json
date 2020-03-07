@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "release": "butler push public digaly/planet-and-execution:html5",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tilemap": "python .\\rlmap.py tileset1.png ./src/tileset1.rlt.ts",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,12 @@
   "bugs": {
     "url": "https://github.com/TomDobbelaere/roguelike/issues"
   },
-  "homepage": "https://github.com/TomDobbelaere/roguelike#readme"
+  "homepage": "https://github.com/TomDobbelaere/roguelike#readme",
+  "devDependencies": {
+    "@types/jest": "^25.1.4",
+    "@types/node": "^13.9.0",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.2.1",
+    "typescript": "^3.8.3"
+  }
 }
