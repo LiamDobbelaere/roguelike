@@ -335,7 +335,7 @@ def to_json(o, level=0):
 
 with open(sys.argv[2], "w") as file:
     file.write(
-        "function data_"
+        "export function data_"
         + sys.argv[1].split(".")[0]
         + "() { return "
         + to_json(json_export_array)

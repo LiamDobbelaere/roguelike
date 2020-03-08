@@ -1,9 +1,4 @@
-const game = new Game(9);
+import { data_tileset1 } from "./tileset1.rlt";
+import { TileMap } from "./tilemap";
 
-console.log(game.getto());
-console.log(game.getto() + 1);
-console.log(game.getto() + 4);
-console.log(game.getto() + 5);
-console.log(game.getto() + 6);
-
-console.log(data_tileset1());
+console.log(TileMap.decompress(data_tileset1()));
