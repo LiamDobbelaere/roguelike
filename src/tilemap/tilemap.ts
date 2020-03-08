@@ -1,6 +1,6 @@
 import { CompressedTile } from "./compressed-tile.interface";
 import { Tile } from "./tile.interface";
-import { padArray, toPairs } from "./utils";
+import { padArray, toPairs } from "../utils/utils";
 
 export class TileMap {
   public static decompress(tiles: CompressedTile[]): Tile[] {
