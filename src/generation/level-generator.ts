@@ -80,16 +80,14 @@ export class LevelGenerator {
 
   private generateStep() {
     const coordinate = this.nextTile.pop();
-    let x = 0;
-    let y = 0;
-
-    if (coordinate?.x !== undefined) {
-      x = coordinate.x;
+    if (!coordinate) {
+      // Should never happen, but you know software
+      this.stuck = true;
+      return;
     }
 
-    if (coordinate?.y !== undefined) {
-      y = coordinate.y;
-    }
+    let x = coordinate.x;
+    let y = coordinate.y;
 
     let xToRight = x + 1;
     let xToLeft = x - 1;
