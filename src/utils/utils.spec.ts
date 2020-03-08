@@ -1,4 +1,4 @@
-import { padArray, toPairs } from "./utils";
+import { padArray, toPairs, shuffle } from "./utils";
 
 describe("padArray", () => {
   it("should pad an array", () => {
@@ -33,5 +33,16 @@ describe("toPairs", () => {
       [9, 10],
       [6, 4]
     ]);
+  });
+});
+
+describe("shuffle", () => {
+  it("should shuffle an array", () => {
+    jest.spyOn(Math, "random").mockReturnValue(0);
+
+    const input = [1, 2, 3, 4, 5];
+    const result = shuffle(input);
+
+    expect(result).toEqual([2, 3, 4, 5, 1]);
   });
 });

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "jest": {
+    "restoreMocks": true
+  },
   "scripts": {
     "dev": "webpack -w",
     "build": "webpack --mode production",
