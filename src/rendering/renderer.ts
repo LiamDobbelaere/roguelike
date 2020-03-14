@@ -5,6 +5,7 @@ export class Renderer {
   private gfxObjects : HTMLImageElement;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  private scale = 4;
   
   public camX = 0;
   public camY = 0;
@@ -14,7 +15,7 @@ export class Renderer {
     this.gfxObjects = document.getElementById("objects") as HTMLImageElement;
     this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
     this.ctx = this.canvas.getContext("2d");
-    this.ctx.scale(4, 4);
+    this.ctx.scale(this.scale, this.scale);
     this.ctx.imageSmoothingEnabled = false;
   }
 
@@ -33,7 +34,7 @@ export class Renderer {
     const clampedEndX = Math.max(
       Math.min(
         clampedStartX +
-          Math.round((this.canvas.width + TILE_SIZE * 2 * 4) / (TILE_SIZE * 4)),
+          Math.round((this.canvas.width + TILE_SIZE * 2 * this.scale) / (TILE_SIZE * this.scale)),
         level.map[0].length
       ),
       0
@@ -41,7 +42,7 @@ export class Renderer {
     const clampedEndY = Math.max(
       Math.min(
         clampedStartY +
-          Math.round((this.canvas.height + TILE_SIZE * 2 * 4) / (TILE_SIZE * 4)),
+          Math.round((this.canvas.height + TILE_SIZE * 2 * this.scale) / (TILE_SIZE * this.scale)),
         level.map.length
       ),
       0

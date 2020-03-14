@@ -3,6 +3,7 @@ import { data_tileset1 } from "../tileset1.rlt";
 import { LevelGenerator, Level, TILE_SIZE } from "../generation/level-generator";
 import { Renderer } from "../rendering/renderer";
 import { Input, KeyMap, Key } from "../input/input";
+import { data_tileset2 } from "../tileset2.rlt";
 
 export class Game {
   private lastFrameTime: number;
