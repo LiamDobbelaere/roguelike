@@ -10,7 +10,8 @@
     "dev": "webpack -w",
     "build": "webpack --mode production",
     "release": "butler push public digaly/planet-and-execution:html5",
-    "build:tilemap": "python .\\rlmap.py tileset1.png ./src/tileset1.rlt.ts",
+    "build:tilemap1": "python .\\rlmap.py tileset1.png ./src/tileset1.rlt.ts",
+    "build:tilemap2": "python .\\rlmap.py tileset2.png ./src/tileset2.rlt.ts",
     "test": "jest",
     "test-dev": "jest --watch"
   },
