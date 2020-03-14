@@ -1,17 +1,22 @@
 import { Tile } from "../tilemap/tile.interface";
 import { shuffle } from "../utils/utils";
 
+export const TILE_SIZE = 12;
+
 interface Coordinate {
   x: number;
   y: number;
 }
 
 interface LevelObject {
-  tileLocation: Coordinate;
-  object: {
-    localLocation: Coordinate;
-    type: number;
-  };
+  location: Coordinate;
+  type: number;
+}
+
+export interface Level {
+  map: number[][];
+  order: Coordinate[];
+  objects: LevelObject[];
 }
 
 export class LevelGenerator {
@@ -66,7 +71,7 @@ export class LevelGenerator {
     this.objects = [];
   }
 
-  public generate() {
+  public generate(): Level {
     this.initialize();
     while (this.addedTiles < this.length || this.stuck) {
       this.initialize();
@@ -75,7 +80,11 @@ export class LevelGenerator {
       }
     }
 
-    return this.level;
+    return {
+      map: this.expand(this.level),
+      objects: [...this.objects],
+      order: [...this.order]
+    };
   }
 
   private generateStep() {
@@ -123,17 +132,11 @@ export class LevelGenerator {
         }
 
         this.objects.push({
-          tileLocation: {
-            x,
-            y
+          location: {
+            x: x * TILE_SIZE + randomObject[0],
+            y: y * TILE_SIZE + randomObject[1]
           },
-          object: {
-            localLocation: {
-              x: randomObject[0],
-              y: randomObject[1]
-            },
-            type: objecttype
-          }
+          type: objecttype
         });
       }
     }
@@ -282,5 +285,41 @@ export class LevelGenerator {
     );
 
     return choices;
+  }
+
+  /**
+   * Expands a level from tiles into an actual map
+   *
+  */
+  private expand(level: number[][]) {
+    const width = level[0].length;
+    const height = level.length;
+    const expandedLevel = new Array(height * TILE_SIZE);
+    for (let i = 0; i < expandedLevel.length; i++) {
+      expandedLevel[i] = new Array(width);
+    }
+  
+    for (let y = 0; y < level.length; y++) {
+      for (let x = 0; x < level[y].length; x++) {
+        const currentTile = this.tileMap[level[y][x]];
+  
+        if (currentTile) {
+          for (let yy = 0; yy < TILE_SIZE; yy++) {
+            for (let xx = 0; xx < TILE_SIZE; xx++) {
+              expandedLevel[y * TILE_SIZE + yy][x * TILE_SIZE + xx] =
+                currentTile.data[yy][xx];
+            }
+          }
+        } else {
+          for (let yy = 0; yy < TILE_SIZE; yy++) {
+            for (let xx = 0; xx < TILE_SIZE; xx++) {
+              expandedLevel[y * TILE_SIZE + yy][x * TILE_SIZE + xx] = 0;
+            }
+          }
+        }
+      }
+    }
+  
+    return expandedLevel;
   }
 }
