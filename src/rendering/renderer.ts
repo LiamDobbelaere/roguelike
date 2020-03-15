@@ -51,6 +51,14 @@ export class Renderer {
       0
     );
 
+    const inRangeX = (x: number) => {
+      return x >= 0 && x < level.map[0].length
+    }
+
+    const inRangeY = (y: number) => {
+      return y >= 0 && y < level.map.length
+    }
+
     for (let y = clampedStartY; y < clampedEndY; y++) {
       for (let x = clampedStartX; x < clampedEndX; x++) {
         const tiledata = level.map[y][x];
@@ -59,17 +67,17 @@ export class Renderer {
         let color = 1; //(mapX + mapY) % 3;
 
         // Neighbour calculation
-        const nt = +(y - 1 >= 0 ? !level.map[y - 1][x] : false);
+        const nt = +(inRangeY(y - 1) ? !level.map[y - 1][x] : false);
         const nr =
-          +(x + 1 < level.map[y].length ? !level.map[y][x + 1] : false);
+          +(inRangeX(x + 1) ? !level.map[y][x + 1] : false);
         const nb =
-          +(y + 1 < level.map.length ? !level.map[y + 1][x] : false);
-        const nl = +(x - 1 >= 0 ? !level.map[y][x - 1] : false);
+          +(inRangeY(y + 1) ? !level.map[y + 1][x] : false);
+        const nl = +(inRangeX(x - 1) ? !level.map[y][x - 1] : false);
 
-        const ntl = +((x - 1 >= 0 && y - 1 >= 0) ? !level.map[y - 1][x - 1] : false);
-        const ntr = +((x + 1 >= 0 && y - 1 >= 0) ? !level.map[y - 1][x + 1] : false);
-        const nbl = +((x - 1 >= 0 && y + 1 >= 0) ? !level.map[y + 1][x - 1] : false);
-        const nbr = +((x + 1 >= 0 && y + 1 >= 0) ? !level.map[y + 1][x + 1] : false);
+        const ntl = +(inRangeX(x - 1) && inRangeY(y - 1) ? !level.map[y - 1][x - 1] : false);
+        const ntr = +(inRangeX(x + 1) && inRangeY(y - 1) ? !level.map[y - 1][x + 1] : false);
+        const nbl = +(inRangeX(x - 1) && inRangeY(y + 1) ? !level.map[y + 1][x - 1] : false);
+        const nbr = +(inRangeX(x + 1) && inRangeY(y + 1) ? !level.map[y + 1][x + 1] : false);
 
         if (tiledata) {
           this.drawTile(x, y, this.gfxTileset, 20 + color);
