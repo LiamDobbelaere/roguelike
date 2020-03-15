@@ -5,10 +5,7 @@ import { Input, Key } from "../../input/input";
 import { Entity } from "../entity";
 
 export class PlayerComponent implements Component {
-  update(dt: number, input: Input, renderer: Renderer, level: Level, entity: Entity): void {
-    renderer.camX = entity.location.x * TILE_SIZE - (6 * TILE_SIZE);
-    renderer.camY = entity.location.y * TILE_SIZE - (5 * TILE_SIZE);
-    
+  update(dt: number, input: Input, renderer: Renderer, level: Level, entity: Entity): void {    
     if (input.isKeyPressed(Key.LEFT)) {
       entity.location.x -= 1;
     }
@@ -24,5 +21,8 @@ export class PlayerComponent implements Component {
     if (input.isKeyPressed(Key.DOWN)) {
       entity.location.y += 1;
     }
+    
+    renderer.camX = entity.location.x * TILE_SIZE - (6 * TILE_SIZE);
+    renderer.camY = entity.location.y * TILE_SIZE - (5 * TILE_SIZE);
   }
 }
