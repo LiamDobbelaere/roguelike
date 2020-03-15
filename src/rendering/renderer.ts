@@ -56,7 +56,7 @@ export class Renderer {
         const tiledata = level.map[y][x];
         const mapX = Math.floor(x / TILE_SIZE);
         const mapY = Math.floor(y / TILE_SIZE);
-        let color = (mapX + mapY) % 3;
+        let color = 1; //(mapX + mapY) % 3;
 
         // Neighbour calculation
         const nt = +(y - 1 >= 0 ? !level.map[y - 1][x] : false);
@@ -67,9 +67,9 @@ export class Renderer {
         const nl = +(x - 1 >= 0 ? !level.map[y][x - 1] : false);
 
         const ntl = +((x - 1 >= 0 && y - 1 >= 0) ? !level.map[y - 1][x - 1] : false);
-        /*const ntr = +((x + 1 >= 0 && y - 1 >= 0) ? !level.map[y - 1][x + 1] : false);
+        const ntr = +((x + 1 >= 0 && y - 1 >= 0) ? !level.map[y - 1][x + 1] : false);
         const nbl = +((x - 1 >= 0 && y + 1 >= 0) ? !level.map[y + 1][x - 1] : false);
-        const nbr = +((x + 1 >= 0 && y + 1 >= 0) ? !level.map[y + 1][x + 1] : false);*/
+        const nbr = +((x + 1 >= 0 && y + 1 >= 0) ? !level.map[y + 1][x + 1] : false);
 
         if (tiledata) {
           this.drawTile(x, y, this.gfxTileset, 20 + color);
@@ -77,10 +77,30 @@ export class Renderer {
           // Shadows
           const shadowIdx = (nl * 1 + nt * 2) || (ntl + 4);
           this.drawTile(x, y, this.gfxShadows, shadowIdx);
-        } else {
+        } else {          
           const idx = nl * 1 + nb * 2 + nr * 4 + nt * 8;
 
           this.drawTile(x, y, this.gfxTileset, idx);
+
+          if (nt && nl && !ntl) {
+            this.drawTile(x, y, this.gfxTileset, 16);  
+          }
+
+          
+          if (nt && nr && !ntr) {
+            this.drawTile(x, y, this.gfxTileset, 17);  
+          }
+          
+          
+          if (nb && nl && !nbl) {
+            this.drawTile(x, y, this.gfxTileset, 18);  
+          }
+          
+          
+          if (nb && nr && !nbr) {
+            this.drawTile(x, y, this.gfxTileset, 19);  
+          }
+          
         }
       }
     }
