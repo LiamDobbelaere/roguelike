@@ -10,22 +10,31 @@ export enum Key {
 }
 
 export class Input {
-  private _keyMap: KeyMap = {};
-  get keymap(): KeyMap {
-    // Return a copy to prevent unexpected mutations mid-frame
-    return {
-      ...this._keyMap
-    };
-  }
+  private keyMap: KeyMap = {};
+  private keyMapPressed: KeyMap = {};
+  private pressedKeys: Key[] = [];
 
-  private allowedKeys = [
-    37, 38, 39, 40, // arrow keys
-    90, 88 // z, x
-  ];
+  private allowedKeys = Object.values(Key);
 
   constructor() {
     window.addEventListener("keydown", this.onKeyInput.bind(this));
     window.addEventListener("keyup", this.onKeyInput.bind(this));  
+  }
+
+  public isKeyDown(key: Key) {
+    return this.keyMap[key];
+  }
+
+  public isKeyPressed(key: Key) {
+    return this.keyMapPressed[key];
+  }
+
+  public clearPressedKeys() {
+    this.pressedKeys.forEach(pressedKey => {
+      delete this.keyMapPressed[pressedKey];
+    });
+
+    this.pressedKeys = [];
   }
 
   private onKeyInput(e: KeyboardEvent) {
@@ -34,7 +43,14 @@ export class Input {
     }
 
     e.preventDefault();
-  
-    this._keyMap[e.keyCode] = e.type == "keydown";
+
+    if (e.type === 'keydown') {
+      if (!this.keyMap[e.keyCode]) {
+        this.keyMapPressed[e.keyCode] = true;
+        this.pressedKeys.push(e.keyCode);
+      }
+    }
+
+    this.keyMap[e.keyCode] = e.type == "keydown";
   }
 }

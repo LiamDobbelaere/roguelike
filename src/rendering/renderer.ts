@@ -113,8 +113,10 @@ export class Renderer {
       }
     }
 
-    level.objects.forEach(object => {
-      this.drawTile(object.location.x, object.location.y, this.gfxObjects, object.type);
+    level.entities.forEach(entity => {
+      if (entity.visible) {
+        this.drawTile(entity.location.x, entity.location.y, this.gfxObjects, entity.spriteIndex);
+      }
     });
   }
 

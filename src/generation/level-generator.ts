@@ -1,22 +1,19 @@
 import { Tile } from "../tilemap/tile.interface";
 import { shuffle } from "../utils/utils";
+import { Entity } from "../entity/entity";
+import { PlayerComponent } from "../entity/components/player";
 
 export const TILE_SIZE = 12;
 
-interface Coordinate {
+export interface Coordinate {
   x: number;
   y: number;
-}
-
-interface LevelObject {
-  location: Coordinate;
-  type: number;
 }
 
 export interface Level {
   map: number[][];
   order: Coordinate[];
-  objects: LevelObject[];
+  entities: Entity[];
 }
 
 export class LevelGenerator {
@@ -30,7 +27,7 @@ export class LevelGenerator {
   private stuck = false;
   private nextTile: Coordinate[] = [];
   private order: Coordinate[] = [];
-  private objects: LevelObject[] = [];
+  private entities: Entity[] = [];
 
   constructor(
     private width: number,
@@ -68,7 +65,7 @@ export class LevelGenerator {
     this.visited[this.startY][this.startX] = true;
 
     this.order = [];
-    this.objects = [];
+    this.entities = [];
   }
 
   public generate(): Level {
@@ -82,7 +79,7 @@ export class LevelGenerator {
 
     return {
       map: this.expand(this.level),
-      objects: [...this.objects],
+      entities: [...this.entities],
       order: [...this.order]
     };
   }
@@ -122,7 +119,7 @@ export class LevelGenerator {
       this.addedTiles += 1;
       this.order.push({ x, y });
 
-      for (let aa = 0; aa < 2; aa++) {
+      for (let aa = 0; aa < 1; aa++) {
         const keyLocations = this.tileMap[randomTile].keyLocations;
         const randomObject =
           keyLocations[Math.floor(Math.random() * keyLocations.length)];
@@ -131,13 +128,17 @@ export class LevelGenerator {
           objecttype = 0;
         }
 
-        this.objects.push({
-          location: {
-            x: x * TILE_SIZE + randomObject[0],
-            y: y * TILE_SIZE + randomObject[1]
-          },
-          type: objecttype
-        });
+        if (this.addedTiles === 1) {
+          this.entities.push(
+            new Entity(
+              {
+                x: x * TILE_SIZE + randomObject[0],
+                y: y * TILE_SIZE + randomObject[1]
+              },
+              [new PlayerComponent()]
+            )
+          );
+        }
       }
     }
 

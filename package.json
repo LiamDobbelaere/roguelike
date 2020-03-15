@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "webpack -w",
     "build": "webpack --mode production",
-    "release": "butler push public digaly/planet-and-execution:html5",
+    "release": "npm run build && butler push public digaly/planet-and-execution:html5",
     "build:tilemap1": "python .\\rlmap.py ./dev/tileset1.png ./src/tileset1.rlt.ts",
     "build:tilemap2": "python .\\rlmap.py ./dev/tileset2.png ./src/tileset2.rlt.ts",
     "test": "jest",
