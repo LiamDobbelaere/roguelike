@@ -1,18 +1,42 @@
 import { Level, TILE_SIZE } from "../generation/level-generator";
+import { Input } from "../input/input";
+
+export interface FontConfig {
+  spaceWidth: number;
+  characters: string;
+  characterHeight: number;
+  coordsXYW: number[];
+}
+
+export interface Font {
+  spaceWidth: number;
+  characterHeight: number;
+  charMap: Map<string, FontCharacter>;
+}
+
+export interface FontCharacter {
+  x: number;
+  y: number;
+  width: number;
+}
 
 export class Renderer {
-  private gfxTileset : HTMLImageElement;
-  private gfxObjects : HTMLImageElement;
-  private gfxShadows : HTMLImageElement;
+  private gfxFont: HTMLImageElement;
+  private gfxTileset: HTMLImageElement;
+  private gfxObjects: HTMLImageElement;
+  private gfxShadows: HTMLImageElement;
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private scale = 4;
   
+  private fonts: Map<string, Font>;
+
   public camX = 0;
   public camY = 0;
 
   constructor() {
+    this.gfxFont = document.getElementById("font") as HTMLImageElement;
     this.gfxTileset = document.getElementById("tileset") as HTMLImageElement;
     this.gfxObjects = document.getElementById("objects") as HTMLImageElement;
     this.gfxShadows = document.getElementById("shadows") as HTMLImageElement;
@@ -20,9 +44,35 @@ export class Renderer {
     this.ctx = this.canvas.getContext("2d");
     this.ctx.scale(this.scale, this.scale);
     this.ctx.imageSmoothingEnabled = false;
+
+    this.fonts = new Map<string, Font>();
   }
 
-  public render(level: Level) {
+  public addFont(name: string, config: FontConfig) {
+    const newFont: Font = {
+      spaceWidth: config.spaceWidth,
+      characterHeight: config.characterHeight,
+      charMap: new Map<string, FontCharacter>()
+    };
+
+    config.characters.split('').forEach((char, index) => {
+      const x = config.coordsXYW[index * 3];
+      const y = config.coordsXYW[index * 3 + 1];
+      const w = config.coordsXYW[index * 3 + 2];
+      
+      const newChar: FontCharacter = {
+        x,
+        y,
+        width: w
+      };
+
+      newFont.charMap.set(char, newChar);
+    });
+
+    this.fonts.set(name, newFont);
+  }
+
+  public render(dt: number, input: Input, renderer: Renderer, level: Level) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const clampedStartX = Math.min(
@@ -116,7 +166,46 @@ export class Renderer {
     level.entities.forEach(entity => {
       if (entity.visible) {
         this.drawTile(entity.location.x, entity.location.y, this.gfxObjects, entity.spriteIndex);
+        entity.draw(dt, input, renderer, level);
       }
+    });
+  }
+
+  public drawText(fontName: string, x: number, y: number, text: string) {
+    const font = this.fonts.get(fontName);
+    const hsep = 1;
+    const vsep = 1;
+    let nextX = 0;
+    let nextY = 0;
+
+    text.split('').forEach((char) => {
+      if (char === ' ') {
+        nextX += font.spaceWidth;
+        return;
+      }
+
+      if (char === '\n') {
+        nextX = 0;
+        nextY += font.characterHeight + vsep;
+        return;
+      }
+
+
+      const fontCharacter = font.charMap.get(char);
+
+      this.ctx.drawImage(
+        this.gfxFont,
+        fontCharacter.x,
+        fontCharacter.y,
+        fontCharacter.width,
+        font.characterHeight,
+        x + nextX,
+        y + nextY,
+        fontCharacter.width,
+        font.characterHeight
+      );
+
+      nextX += fontCharacter.width + hsep;
     });
   }
 

@@ -25,4 +25,8 @@ export class PlayerComponent implements Component {
     renderer.camX = entity.location.x * TILE_SIZE - (6 * TILE_SIZE);
     renderer.camY = entity.location.y * TILE_SIZE - (5 * TILE_SIZE);
   }
+
+  draw(dt: number, input: Input, renderer: Renderer, level: Level, entity: Entity): void {
+    renderer.drawText("default", 32, 32, "THE QUICK BROWN FOX JUMPS OVER\nTHE LAZY DOG\n0123456789.!?;");
+  }
 }

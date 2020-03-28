@@ -17,7 +17,13 @@ export class Entity {
   public update(dt: number, input: Input, renderer: Renderer, level: Level) {
     this.components.forEach(component => {
       component.update(dt, input, renderer, level, this);
-    })
+    });
+  }
+
+  public draw(dt: number, input: Input, renderer: Renderer, level: Level) {
+    this.components.forEach(component => {
+      component.draw(dt, input, renderer, level, this);
+    });
   }
 
   public addComponent(component: Component) {

@@ -5,4 +5,5 @@ import { Entity } from "../entity";
 
 export interface Component {
   update(dt: number, input: Input, renderer: Renderer, level: Level, entity: Entity): void
+  draw(dt: number, input: Input, renderer: Renderer, level: Level, entity: Entity): void
 }
